@@ -89,34 +89,23 @@
 
                 // Если мы здесь, то парсим расписание...
                 var number = periods.length / 2;
-                
-                var regexp = /(	|)(\d{1,2})	((\d{2}( |))+)/g;
 
-                var parsed = row.match(regexp);
-                console.log(parsed);
+                for (let i = 0; i < number; i++) {
+                    var hour = periods[i * 2];
 
+                    if (/\d+/.test(hour)) {
+                        var minutes = periods[i * 2 + 1];
 
+                        if (!sections[i]) {
+                            sections[i] = {
+                                title: '',
+                                schedule: {}
+                            }
+                        }
 
-
-
-
-
-                // for (let i = 0; i < number; i++) {
-                //     var hour = periods[i * 2];
-
-                //     if (/\d+/.test(hour)) {
-                //         var minutes = periods[i * 2 + 1];
-
-                //         if (!sections[i]) {
-                //             sections[i] = {
-                //                 title: '',
-                //                 schedule: {}
-                //             }
-                //         }
-
-                //         sections[i]['schedule'][hour] = minutes.split(' ');
-                //     }
-                // }
+                        sections[i]['schedule'][hour] = minutes.split(' ');
+                    }
+                }
             });
 
             return sections;
