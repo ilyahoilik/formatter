@@ -57,7 +57,9 @@
             var result = [];
 
             _.map(schedule, function (minutes, hour) {
-                hour = hour.length == 2 ? hour : '0' + hour;
+                hour = hour.trim();
+
+                hour = (hour.length == 2) ? hour : '0' + hour;
 
                 minutes.forEach(function (minute) {
                     result.push(hour + ':' + minute);

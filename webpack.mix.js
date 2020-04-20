@@ -13,8 +13,7 @@ const tailwindcss = require('tailwindcss');
  */
 
 mix.js('resources/js/formatter.js', 'public/js')
-    .sass('resources/sass/formatter.scss', 'public/css')
-    .sass('resources/sass/fonts.scss', 'public/css')
+    .sass('resources/sass/formatter.scss', 'public/css') 
     .options({
         processCssUrls: false,
         postCss: [ tailwindcss('./tailwind.config.js') ],

@@ -17326,6 +17326,7 @@ module.exports = function(module) {
       var result = [];
 
       _.map(schedule, function (minutes, hour) {
+        hour = hour.trim();
         hour = hour.length == 2 ? hour : '0' + hour;
         minutes.forEach(function (minute) {
           result.push(hour + ':' + minute);
@@ -17401,17 +17402,6 @@ module.exports = function(module) {
 
 /***/ }),
 
-/***/ "./resources/sass/fonts.scss":
-/*!***********************************!*\
-  !*** ./resources/sass/fonts.scss ***!
-  \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-
 /***/ "./resources/sass/formatter.scss":
 /*!***************************************!*\
   !*** ./resources/sass/formatter.scss ***!
@@ -17424,15 +17414,14 @@ module.exports = function(module) {
 /***/ }),
 
 /***/ 0:
-/*!*****************************************************************************************************!*\
-  !*** multi ./resources/js/formatter.js ./resources/sass/formatter.scss ./resources/sass/fonts.scss ***!
-  \*****************************************************************************************************/
+/*!*************************************************************************!*\
+  !*** multi ./resources/js/formatter.js ./resources/sass/formatter.scss ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 __webpack_require__(/*! /Users/ilyahoilik/Documents/schedule-formatter/resources/js/formatter.js */"./resources/js/formatter.js");
-__webpack_require__(/*! /Users/ilyahoilik/Documents/schedule-formatter/resources/sass/formatter.scss */"./resources/sass/formatter.scss");
-module.exports = __webpack_require__(/*! /Users/ilyahoilik/Documents/schedule-formatter/resources/sass/fonts.scss */"./resources/sass/fonts.scss");
+module.exports = __webpack_require__(/*! /Users/ilyahoilik/Documents/schedule-formatter/resources/sass/formatter.scss */"./resources/sass/formatter.scss");
 
 
 /***/ })
