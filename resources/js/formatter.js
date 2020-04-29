@@ -1,146 +1,165 @@
 /**
- * Schedule Formatter
- * (c) Ilya Hoilik - https://ilyahoilik.com
- *
- * formatter.js - Format schedule raw data into readable format
- *
- * Author: Ilya Hoilik
+ * Schedule Formatter <https://github.com/ilyahoilik/formatter>
+ * Simple module allowing us to paste raw schedule and receive formatted result.
+ * 
+ * Copyright Ilya Hoilik <https://ilyahoilik.com>
+ * Released under MIT license <https://mit-license.org>
  */
-;( function(){
-    "use strict";
+;(function() {
+    'use strict';
 
-    window._ = require('lodash');
+    /** Module dependencies. */
+    var _ = require('lodash');
+    
+    // /** Include parsers. */
+    // var parsers = [
+    //     require('lodash'),
+    //     require('lodash'),
+    //     require('lodash'),
+    // ];
 
-    return {
+    /** Used as reference to input field with raw schedule. */
+    var input = document.getElementById('input');
 
-        raw: null,
-        result: null,
-        type: null,
+    /** Used as reference to output block with formatted schedule. */
+    var output = document.getElementById('output');
 
-        initialize: function () {
-            this.raw = document.getElementById('raw');
-            this.result = document.getElementById('result');
-            this.type = document.getElementById('type');
-            this.number = document.getElementById('number');
-            this.template = _.template(document.getElementById('section').innerHTML);
+    /** Used as schedule block template. */
+    var template = _.template(document.getElementById('section').innerHTML);
 
-            this.raw.oninput = this.format.bind(this);
-        },
+    /** Used to handle schedule change. */
+    input.oninput = function (e) {
+        e.preventDefault();
 
-        format: function (e) {
-            e.preventDefault();
+        var sections = parseSchedule(input.value);
 
-            var self = this;
-            var schedule = this.raw.value;
-
-            try {
-                var sections = this.minsktrans(schedule);
-            } catch (error) {
-                try {
-                    var sections = this.transnavigation(schedule);
-                } catch (error) {
-                    throw error;
-                }
-            }            
-
-            var result = _.map(sections, function (section) {
-                return self.template({
-                    title: section.title,
-                    schedule: self.toReadable(section.schedule),
-                });
+        var schedule = _.map(sections, function (schedule, title) {
+            return template({
+                title: /[A-Za-zА-Яа-я]/.test(title) ? title : null,
+                schedule: schedule.join(', ')
             });
+        });
 
-            this.result.innerHTML = result.join('');
-        },
+        output.innerHTML = schedule.join('');
+    };
 
-        toReadable: function (schedule) {
-            var result = [];
+    /**
+     * Determines schedule format and returns parsed schedule as array.
+     * 
+     * @param {string} data
+     * @returns {array}
+     */
+    function parseSchedule(data) {
 
-            _.map(schedule, function (minutes, hour) {
-                hour = hour.trim();
+        var sections = {};
 
-                hour = (hour.length == 2) ? hour : '0' + hour;
+        /** Used to compare raw schedule with regular expression. */
+        function matchWithRegexp(regexp) {
+            var exploded = [...data.matchAll(regexp)];
 
-                minutes.forEach(function (minute) {
-                    result.push(hour + ':' + minute);
+            return (exploded && exploded.length);
+        }
+
+        /** Used to concat hours and minutes and push them into object. */
+        function pushToSection(sectionId, hourOrSchedule, minutes) {
+            if (!['string', 'object'].includes(typeof hourOrSchedule)) {
+                console.warn('Invalid {hourOrSchedule} argument.');
+            }
+
+            if (minutes && (typeof minutes != 'object' || !minutes.length)) {
+                console.warn('Invalid {minutes} argument.');
+            }
+
+            if (typeof hourOrSchedule != 'object' && minutes) {
+                var minutes = _.map(minutes, function (minute) {
+                    return hourOrSchedule + ':' + minute;
                 });
-            });
 
-            return result.join(', ');
-        },
+                sections[sectionId] = sectionId in sections ? sections[sectionId] : [];
+                sections[sectionId].push(...minutes);
+            }
+        }
 
-        minsktrans: function (schedule) {
-            schedule = schedule.split('\n');
+        /** Like Organizator Perevozok */
+        if (matchWithRegexp(/^(\d{2}):	([\d{2}, 	]+)$/gm)) {
+            console.log('Organizator Perevozok');
 
-            var sections = {};
+            /** Iterate through each row. */
+            [...data.matchAll(/^(\d{2}):	([\d{2}, 	]+)$/gm)].forEach(function (section) {
+                var hour = section[1];
 
-            schedule.forEach(function (row, id) {
-                var periods = _.compact(row.split('	'));
+                section[2].split('	').forEach(function (string, id) {
+                    var minutes = _.map([...string.matchAll(/\d{2}/g)], 0);
 
-                // Если строка - шапка, то сохраняем названия секций и продолжаем
-                if (id == 0 && /[A-Za-zА-Яа-я]/.test(row)) {
-                    periods.forEach(function (period, periodId) {
-                        sections[periodId] = {
-                            title: period,
-                            schedule: {}
-                        };
-                    });
-
-                    return;
-                }
-
-                // Если мы здесь, то парсим расписание...
-                var number = periods.length / 2;
-
-                for (let i = 0; i < number; i++) {
-                    var hour = periods[i * 2];
-
-                    if (/\d+/.test(hour)) {
-                        var minutes = periods[i * 2 + 1];
-
-                        if (!sections[i]) {
-                            sections[i] = {
-                                title: '',
-                                schedule: {}
-                            }
-                        }
-
-                        sections[i]['schedule'][hour] = minutes.split(' ');
-                    }
-                }
+                    pushToSection(id, hour, minutes);
+                });
             });
 
             return sections;
-        },
+        }
 
-        transnavigation: function (schedule) {
-            schedule = schedule.split('\n');
+        /** Like PikasWWW */
+        if (matchWithRegexp(/^(\d{1,2})	([\d{2}]+)$/gm)) {
+            console.log('PikasWWW');
 
-            var data = {};
+            var sectionId;
 
-            var lastHour;
-            schedule.forEach(function (row) {
-                // Если строка содержит табуляцию, значит это час.
-                if (/	/.test(row)) {
-                    var hour = row.replace('	', '');
+            /** Iterate through each row. */
+            data.split('\n').forEach(function (row) {
 
-                    data[hour] = [];
-
-                    lastHour = hour;
+                /** Search for text row (section title). */
+                if (/[A-Za-zА-Яа-я]/.test(row)) {
+                    sectionId = row.trim();
                     return;
                 }
 
-                // Если мы здесь, то значит это минута. Добавляем её к часу.
-                if (/\d+/.test(row)) {
-                    data[lastHour].push(row);
-                }
+                var section = row.match(/^(\d{1,2})	([\d{2}]+)$/);
+
+                var hour = (section[1].length < 2 ? '0' : '') + section[1];
+                var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
+
+                pushToSection(sectionId, hour, minutes);
             });
 
-            return [{
-                title: '',
-                schedule: data
-            }];
+            return sections;
         }
 
+        /** Like Minsktrans */
+        if (matchWithRegexp(/^\d{1,2}	([\d{2} ?]+)/gm)) {
+            console.log('Minsktrans');
+
+            /** Iterate through each row. */
+            data.split('\n').forEach(function (row) {
+
+                /** Iterate through each section in the row. */
+                [...row.matchAll(/(\d{1,2})	([\d{2} ?]+)/g)].forEach(function (section, sectionId) {
+                    var hour = (section[1].length < 2 ? '0' : '') + section[1];
+                    var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
+
+                    pushToSection(sectionId, hour, minutes);
+                });
+
+            });
+
+            return sections;
+        }
+
+        /** Like Transnavigation */
+        if (matchWithRegexp(/^(\d{1,2})	$((\n^\d{2}$)+)/gm)) {
+            console.log('Transnavigation');
+
+            /** Iterate through each row. */
+            [...data.matchAll(/^(\d{1,2})	$((\n^\d{2}$)+)/gm)].forEach(function (section) {
+                var hour = (section[1].length < 2 ? '0' : '') + section[1];
+                var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
+
+                pushToSection(0, hour, minutes);
+            });
+
+            return sections;
+        }
+
+        return {};
     };
-}().initialize());
+
+}.call(this));
