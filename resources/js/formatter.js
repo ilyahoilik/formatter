@@ -10,13 +10,6 @@
 
     /** Module dependencies. */
     var _ = require('lodash');
-    
-    // /** Include parsers. */
-    // var parsers = [
-    //     require('lodash'),
-    //     require('lodash'),
-    //     require('lodash'),
-    // ];
 
     /** Used as reference to input field with raw schedule. */
     var input = document.getElementById('input');
@@ -24,8 +17,15 @@
     /** Used as reference to output block with formatted schedule. */
     var output = document.getElementById('output');
 
+    /** Used as reference to enable/disable speech recognition button. */
+    var microphone = document.getElementById('microphone');
+
     /** Used as schedule block template. */
     var template = _.template(document.getElementById('section').innerHTML);
+
+    /** Used as reference to speech recognition. */
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var recognition = null;
 
     /** Used to handle schedule change. */
     input.oninput = function (e) {
@@ -34,14 +34,53 @@
         var sections = parseSchedule(input.value);
 
         var schedule = _.map(sections, function (schedule, title) {
-            return template({
-                title: /[A-Za-zА-Яа-я]/.test(title) ? title : null,
-                schedule: schedule.join(', ')
-            });
+            if (schedule.length) {
+                return template({
+                    title: /[A-Za-zА-Яа-я]/.test(title) ? title : null,
+                    schedule: schedule.join(', ')
+                });
+            }
         });
 
         output.innerHTML = schedule.join('');
     };
+
+    /** Used to handle speech recognition. */
+    microphone.onclick = function (e) {
+        e.preventDefault();
+
+        if (recognition) {
+            recognition.stop();
+            recognition = null;
+
+            return;
+        }
+
+        recognition = new SpeechRecognition();
+
+        recognition.interimResults = true;
+        recognition.lang = 'ru-RU';
+
+        recognition.onaudiostart = function (e) {
+            microphone.className = microphone.className.replace('text-gray', 'text-red');
+        };
+
+        recognition.onaudioend = function (e) {
+            microphone.className = microphone.className.replace('text-red', 'text-gray');
+
+            recognition = null;
+        };
+
+        recognition.onresult = function (e) {
+            var result = e.results[e.resultIndex];
+
+            input.value = result[0].transcript.replace(/[^0-9]/g, '');
+
+            input.dispatchEvent(new Event('input'));
+        };
+
+        recognition.start();
+    }
 
     /**
      * Determines schedule format and returns parsed schedule as array.
@@ -50,7 +89,6 @@
      * @returns {array}
      */
     function parseSchedule(data) {
-
         var sections = {};
 
         /** Used to compare raw schedule with regular expression. */
@@ -159,7 +197,11 @@
             return sections;
         }
 
-        return {};
+        sections[0] = _.map(data.match(/(\d{4})/g), function (time) {
+            return time.replace(/^(\d{2})/, '$1:');
+        });
+
+        return sections;
     };
 
 }.call(this));
