@@ -183,11 +183,11 @@
         }
 
         /** Like Transnavigation */
-        if (matchWithRegexp(/^(\d{1,2})	$((\n^\d{2}$)+)/gm)) {
+        if (matchWithRegexp(/^(\d{1,2})	$((\n^\d{2}(\[.+\])?$)+)/gm)) {
             console.log('Transnavigation');
 
             /** Iterate through each row. */
-            [...data.matchAll(/^(\d{1,2})	$((\n^\d{2}$)+)/gm)].forEach(function (section) {
+            [...data.matchAll(/^(\d{1,2})	$((\n^\d{2}(\[.+\])?$)+)/gm)].forEach(function (section) {
                 var hour = (section[1].length < 2 ? '0' : '') + section[1];
                 var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
 
