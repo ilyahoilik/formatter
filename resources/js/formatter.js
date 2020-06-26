@@ -17,6 +17,9 @@
     /** Used as reference to output block with formatted schedule. */
     var output = document.getElementById('output');
 
+    /** Used as reference to clear input field button. */
+    var clear = document.getElementById('clear');
+
     /** Used as reference to enable/disable speech recognition button. */
     var microphone = document.getElementById('microphone');
 
@@ -80,6 +83,12 @@
         };
 
         recognition.start();
+    }
+
+    /** Used to clear input field. */
+    clear.onclick = function (e) {
+        input.value = null;
+        input.dispatchEvent(new Event('input'));
     }
 
     /**
