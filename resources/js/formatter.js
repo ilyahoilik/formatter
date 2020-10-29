@@ -206,6 +206,24 @@
             return sections;
         }
 
+        /** Like Mosgortrans */
+        if (matchWithRegexp(/^(\d{2}):(\n\d{2})+$/gm)) {
+            console.log('Mosgortrans');
+
+            /** Iterate through each row. */
+            [...data.matchAll(/^(\d{2}):(\n\d{2})+$/gm)].forEach(function (section) {
+                var data = section[0].split(':');
+
+                var hour = data[0];
+                var minutes = data[1].split('\n');
+                minutes.shift();
+
+                pushToSection(0, hour, minutes);
+            });
+
+            return sections;
+        }
+
         sections[0] = _.map(data.match(/(\d{4})/g), function (time) {
             return time.replace(/^(\d{2})/, '$1:');
         });
