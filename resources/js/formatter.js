@@ -148,11 +148,11 @@
         }
 
         /** Like Mosgortrans.org */
-        if (matchWithRegexp(/^((\d{1,2})	(\d{2}\n)+)/gm)) {
+        if (matchWithRegexp(/^((\d{1,2})([	\n]\d{2}$)+)/gm)) {
             console.log('Mosgortrans.org');
 
             /** Iterate through each row. */
-            [...data.matchAll(/^(\d{1,2})	(\d{2}\n)+/gm)].forEach(function (section) {
+            [...data.matchAll(/^((\d{1,2})([	\n]\d{2}$)+)/gm)].forEach(function (section) {
                 var data = section[0].split('	');
                 console.log(data);
 
