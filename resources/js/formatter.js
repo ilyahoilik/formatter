@@ -118,9 +118,11 @@
             }
 
             if (typeof hourOrSchedule != 'object' && minutes) {
-                var minutes = _.map(minutes, function (minute) {
-                    return hourOrSchedule + ':' + minute;
-                });
+                var minutes = _.filter(_.map(minutes, function (minute) {
+                    if (minute) {
+                        return hourOrSchedule + ':' + minute;
+                    }
+                }));
 
                 sections[sectionId] = sectionId in sections ? sections[sectionId] : [];
                 sections[sectionId].push(...minutes);
@@ -140,6 +142,24 @@
 
                     pushToSection(id, hour, minutes);
                 });
+            });
+
+            return sections;
+        }
+
+        /** Like Mosgortrans.org */
+        if (matchWithRegexp(/^((\d{1,2})	(\d{2}\n)+)/gm)) {
+            console.log('Mosgortrans.org');
+
+            /** Iterate through each row. */
+            [...data.matchAll(/^(\d{1,2})	(\d{2}\n)+/gm)].forEach(function (section) {
+                var data = section[0].split('	');
+                console.log(data);
+
+                var hour = data[0];
+                var minutes = data[1].split("\n");
+
+                pushToSection(0, hour, minutes);
             });
 
             return sections;
@@ -217,6 +237,23 @@
                 var hour = data[0];
                 var minutes = data[1].split('\n');
                 minutes.shift();
+
+                pushToSection(0, hour, minutes);
+            });
+
+            return sections;
+        }
+
+        /** Like Vitoperator.by */
+        if (matchWithRegexp(/^(\d{2}):(\d{2},?)+$/gm)) {
+            console.log('Vitoperator.by');
+
+            /** Iterate through each row. */
+            [...data.matchAll(/^(\d{2}):(\d{2},?)+$/gm)].forEach(function (section) {
+                var data = section[0].split(':');
+
+                var hour = data[0];
+                var minutes = data[1].split(',');
 
                 pushToSection(0, hour, minutes);
             });
