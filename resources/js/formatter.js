@@ -10,6 +10,7 @@
 
     /** Module dependencies. */
     var _ = require('lodash');
+    var $ = require('jquery');
 
     /** Used as reference to input field with raw schedule. */
     var input = document.getElementById('input');
@@ -46,6 +47,46 @@
         });
 
         output.innerHTML = schedule.join('');
+    };
+
+    /** Used to handle paste event. */
+    input.onpaste = function (e) {
+		var clipboardData, pastedData;
+
+        clipboardData = e.clipboardData || window.clipboardData;
+        pastedData = $('<div/>').html(
+            clipboardData.getData('text/html')
+        );
+
+        var sections = {0: []};
+
+        pastedData.find('table.schedule td').each(function () {
+            var hour = $(this).find('.hour').html();
+
+            $(this).find('.minutes').each(function () {
+                sections[0].push(hour + ':' + $(this).html());
+            });
+        });
+
+        if (sections[0].length) {
+            console.log('lkcar');
+
+            var schedule = _.map(sections, function (schedule, title) {
+                if (schedule.length) {
+                    return template({
+                        title: /[A-Za-zА-Яа-я]/.test(title) ? title : null,
+                        schedule: schedule.join(', ')
+                    });
+                }
+            });
+    
+            if (schedule) {
+                e.preventDefault();
+            }
+    
+            $(input).val(clipboardData.getData('Text'));
+            output.innerHTML = schedule.join('');
+        }
     };
 
     /** Used to handle speech recognition. */

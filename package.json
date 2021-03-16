@@ -19,6 +19,7 @@
         "vue-template-compiler": "^2.6.11"
     },
     "dependencies": {
+        "jquery": "^3.6.0",
         "tailwindcss": "^1.4.1",
         "tesseract.js": "^2.1.1"
     }
