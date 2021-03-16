@@ -147,17 +147,39 @@
             return sections;
         }
 
+        /** Like Mosgortrans */
+        if (matchWithRegexp(/^(\d{2}):(\n\d{2})+$/gm)) {
+            console.log('Mosgortrans');
+
+            /** Iterate through each row. */
+            [...data.matchAll(/^(\d{2}):(\n\d{2})+$/gm)].forEach(function (section) {
+                var data = section[0].split(':');
+
+                var hour = data[0];
+                var minutes = data[1].split('\n');
+                minutes.shift();
+
+                pushToSection(0, hour, minutes);
+            });
+
+            return sections;
+        }
+
         /** Like Mosgortrans.org */
         if (matchWithRegexp(/^((\d{1,2})([	\n]\d{2}$)+)/gm)) {
             console.log('Mosgortrans.org');
 
             /** Iterate through each row. */
             [...data.matchAll(/^((\d{1,2})([	\n]\d{2}$)+)/gm)].forEach(function (section) {
-                var data = section[0].split('	');
-                console.log(data);
+                if (section[0].includes('	')) {
+                    var data = section[0].split('	');
 
-                var hour = data[0];
-                var minutes = data[1].split("\n");
+                    var hour = data[0];
+                    var minutes = data[1].split("\n");
+                } else {
+                    var minutes = section[0].split("\n");
+                    var hour = minutes.shift();
+                }
 
                 pushToSection(0, hour, minutes);
             });
@@ -219,24 +241,6 @@
             [...data.matchAll(/^(\d{1,2})	$((\n^\d{2}(\[.+\])?$)+)/gm)].forEach(function (section) {
                 var hour = (section[1].length < 2 ? '0' : '') + section[1];
                 var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
-
-                pushToSection(0, hour, minutes);
-            });
-
-            return sections;
-        }
-
-        /** Like Mosgortrans */
-        if (matchWithRegexp(/^(\d{2}):(\n\d{2})+$/gm)) {
-            console.log('Mosgortrans');
-
-            /** Iterate through each row. */
-            [...data.matchAll(/^(\d{2}):(\n\d{2})+$/gm)].forEach(function (section) {
-                var data = section[0].split(':');
-
-                var hour = data[0];
-                var minutes = data[1].split('\n');
-                minutes.shift();
 
                 pushToSection(0, hour, minutes);
             });
