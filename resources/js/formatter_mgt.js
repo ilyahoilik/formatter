@@ -170,78 +170,21 @@
             }
         }
 
-        /** Like Organizator Perevozok */
-        if (matchWithRegexp(/^(\d{2}):	([\d{2}, 	]+)$/gm)) {
-            console.log('Organizator Perevozok');
+        /** Like Mosgortrans.org */
+        if (matchWithRegexp(/^((\d{1,2})([	\n]\d{2}$)+)/gm)) {
+            console.log('Mosgortrans.org');
 
             /** Iterate through each row. */
-            [...data.matchAll(/^(\d{2}):	([\d{2}, 	]+)$/gm)].forEach(function (section) {
-                var hour = section[1];
+            [...data.matchAll(/^((\d{1,2})([	\n]\d{2}$)+)/gm)].forEach(function (section) {
+                if (section[0].includes('	')) {
+                    var data = section[0].split('	');
 
-                section[2].split('	').forEach(function (string, id) {
-                    var minutes = _.map([...string.matchAll(/\d{2}/g)], 0);
-
-                    pushToSection(id, hour, minutes);
-                });
-            });
-
-            return sections;
-        }
-
-        /** Like PikasWWW */
-        if (matchWithRegexp(/^(\d{1,2})	([\d{2}]+)$/gm)) {
-            console.log('PikasWWW');
-
-            var sectionId;
-
-            /** Iterate through each row. */
-            data.split('\n').forEach(function (row) {
-
-                /** Search for text row (section title). */
-                if (/[A-Za-zА-Яа-я]/.test(row)) {
-                    sectionId = row.trim();
-                    return;
+                    var hour = data[0];
+                    var minutes = data[1].split("\n");
+                } else {
+                    var minutes = section[0].split("\n");
+                    var hour = minutes.shift();
                 }
-
-                var section = row.match(/^(\d{1,2})	([\d{2}]+)$/);
-
-                var hour = (section[1].length < 2 ? '0' : '') + section[1];
-                var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
-
-                pushToSection(sectionId, hour, minutes);
-            });
-
-            return sections;
-        }
-
-        /** Like Minsktrans */
-        if (matchWithRegexp(/^\d{1,2}	([\d{2} ?]+)/gm)) {
-            console.log('Minsktrans');
-
-            /** Iterate through each row. */
-            data.split('\n').forEach(function (row) {
-
-                /** Iterate through each section in the row. */
-                [...row.matchAll(/(\d{1,2})	([\d{2} ?]+)/g)].forEach(function (section, sectionId) {
-                    var hour = (section[1].length < 2 ? '0' : '') + section[1];
-                    var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
-
-                    pushToSection(sectionId, hour, minutes);
-                });
-
-            });
-
-            return sections;
-        }
-
-        /** Like Transnavigation */
-        if (matchWithRegexp(/^(\d{1,2})	$((\n^\d{2}(\[.+\])?$)+)/gm)) {
-            console.log('Transnavigation');
-
-            /** Iterate through each row. */
-            [...data.matchAll(/^(\d{1,2})	$((\n^\d{2}(\[.+\])?$)+)/gm)].forEach(function (section) {
-                var hour = (section[1].length < 2 ? '0' : '') + section[1];
-                var minutes = _.map([...section[2].matchAll(/\d{2}/g)], 0);
 
                 pushToSection(0, hour, minutes);
             });
@@ -249,16 +192,17 @@
             return sections;
         }
 
-        /** Like Vitoperator.by */
-        if (matchWithRegexp(/^(\d{2}):(\d{2},?)+$/gm)) {
-            console.log('Vitoperator.by');
+        /** Like Mosgortrans */
+        if (matchWithRegexp(/^(\d{2}):(\n\d{2})+$/gm)) {
+            console.log('Mosgortrans');
 
             /** Iterate through each row. */
-            [...data.matchAll(/^(\d{2}):(\d{2},?)+$/gm)].forEach(function (section) {
+            [...data.matchAll(/^(\d{2}):(\n\d{2})+$/gm)].forEach(function (section) {
                 var data = section[0].split(':');
 
                 var hour = data[0];
-                var minutes = data[1].split(',');
+                var minutes = data[1].split('\n');
+                minutes.shift();
 
                 pushToSection(0, hour, minutes);
             });
