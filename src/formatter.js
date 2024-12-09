@@ -1,3 +1,7 @@
+/** Module dependencies. */
+import _ from 'lodash';
+import $ from 'jquery';
+
 /**
  * Schedule Formatter <https://github.com/ilyahoilik/formatter>
  * Simple module allowing us to paste raw schedule and receive formatted result.
@@ -7,10 +11,6 @@
  */
 ;(function() {
     'use strict';
-
-    /** Module dependencies. */
-    var _ = require('lodash');
-    var $ = require('jquery');
 
     /** Used as reference to input field with raw schedule. */
     var input = document.getElementById('input');
@@ -171,17 +171,21 @@
         }
 
         /** Like Organizator Perevozok */
-        if (matchWithRegexp(/^(\d{2}):	([\d{2}, 	]+)$/gm)) {
+        if (matchWithRegexp(/^ (\d{2}):\n([\d{2}, 	]+)$/gm)) {
             console.log('Organizator Perevozok');
 
+            /** Search for text row (section title). */
+            var firstRow = data.split('\n')[0].trim().split('\t');
+
             /** Iterate through each row. */
-            [...data.matchAll(/^(\d{2}):	([\d{2}, 	]+)$/gm)].forEach(function (section) {
+            [...data.matchAll(/^ (\d{2}):\n([\d{2}, 	]+)$/gm)].forEach(function (section) {
                 var hour = section[1];
 
                 section[2].split('	').forEach(function (string, id) {
                     var minutes = _.map([...string.matchAll(/\d{2}/g)], 0);
+                    var sectionId = id+1 in firstRow ? firstRow[id+1] : id;
 
-                    pushToSection(id, hour, minutes);
+                    pushToSection(sectionId, hour, minutes);
                 });
             });
 
